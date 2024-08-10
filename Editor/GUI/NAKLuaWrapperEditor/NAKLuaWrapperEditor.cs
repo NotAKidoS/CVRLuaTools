@@ -88,7 +88,8 @@ namespace NAK.LuaTools
             if (!_guiLuaScriptsPreviewFoldout)
                 return; // foldout is not open, no need to validate
             
-            if (_luaWrapper.scriptEntries == null)
+            if (_luaWrapper.scriptEntries == null
+                || _luaWrapper.boundEntries == null)
                 return; // no script entries to validate
 
             bool hasChanged = false;
@@ -109,13 +110,14 @@ namespace NAK.LuaTools
         private void UpdateScriptPreview()
         {
             string scriptText = LuaScriptGenerator.GenerateScriptText(_luaWrapper.boundEntries, _luaWrapper.scriptEntries);
-            int lineCount = CountLines(scriptText);
+            bool isEmptyOrWhitespace = string.IsNullOrWhiteSpace(scriptText);
+            int lineCount = isEmptyOrWhitespace ? 0 : CountLines(scriptText);
             if (_luaWrapper.CachedLineCount != lineCount)
             {
                 _luaWrapper.CachedLineCount = lineCount;
                 _luaWrapper.CachedLineNumberText = GetLineNumbers(lineCount);
             }
-            _luaWrapper.OutputScriptText = scriptText;
+            _luaWrapper.OutputScriptText = isEmptyOrWhitespace ? string.Empty : scriptText;
         }
         
         private static int CountLines(string text) 

@@ -92,23 +92,37 @@ namespace NAK.LuaTools
             
             List<string> scriptTexts = new List<string>();
 
-            // generate our bound entries script
-            StringBuilder boundEntriesScript = new();
-            boundEntriesScript.AppendLine("UnityEngine = require(\"UnityEngine\")"); // default require
-            boundEntriesScript.AppendLine("BoundEntries = {");
-            
-            foreach (NAKLuaClientBehaviourWrapper.BoundItem entry in boundEntries)
-                AppendBoundItem(boundEntriesScript, entry, 1);
-            
-            boundEntriesScript.AppendLine("}");
-            scriptTexts.Add(boundEntriesScript.ToString());
+            if (boundEntries != null)
+            {
+                // generate our bound entries script
+                StringBuilder boundEntriesScript = new();
+                if (boundEntries.Length > 0)
+                {
+                    boundEntriesScript.AppendLine("UnityEngine = require(\"UnityEngine\")"); // default require
+                    boundEntriesScript.AppendLine("BoundEntries = {");
+                    
+                    foreach (NAKLuaClientBehaviourWrapper.BoundItem entry in boundEntries)
+                        AppendBoundItem(boundEntriesScript, entry, 1);
+                    
+                    boundEntriesScript.AppendLine("}");
+                    scriptTexts.Add(boundEntriesScript.ToString());
+                }
+                else
+                {
+                    // no bound entries, just create an empty table
+                    boundEntriesScript.AppendLine("BoundEntries = {}");
+                }
+            }
             
             // add our script entries
-            foreach (NAKLuaClientBehaviourWrapper.ScriptEntry entry in scriptEntries)
+            if (scriptEntries != null)
             {
-                if (!entry.IsValidAndActive) continue;
-                scriptTexts.Add(entry.script.m_ScriptText);
-            }
+                foreach (NAKLuaClientBehaviourWrapper.ScriptEntry entry in scriptEntries)
+                {
+                    if (!entry.IsValidAndActive) continue;
+                    scriptTexts.Add(entry.script.m_ScriptText);
+                }
+            } 
 
             // merge everything
             string mergedScript = LuaScriptMerger.MergeScripts(scriptTexts.ToArray());
