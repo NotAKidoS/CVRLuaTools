@@ -41,12 +41,14 @@ namespace NAK.LuaTools
                 true, true, true, true)
             {
                 multiSelect = true,
-                drawHeaderCallback = rect => EditorGUI.LabelField(rect, $"Bound Entries ({m_BoundEntries.arraySize})"),
+                drawHeaderCallback = rect =>
+                {
+                    EditorGUI.LabelField(rect, $"Bound Entries ({m_BoundEntries.arraySize})");
+                    ReorderableListCommands.HandleCommands(_boundEntriesList, _luaWrapper.boundEntries);
+                },
                 drawElementCallback = (rect, index, active, focused) =>
                 {
                     SerializedProperty element = m_BoundEntries.GetArrayElementAtIndex(index);
-                    rect.y += 3;
-                    rect.height = EditorGUIUtility.singleLineHeight;
                     EditorGUI.PropertyField(rect, element, GUIContent.none);
                 },
                 elementHeightCallback = index => EditorGUI.GetPropertyHeight(m_BoundEntries.GetArrayElementAtIndex(index)),

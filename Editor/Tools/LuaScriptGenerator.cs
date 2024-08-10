@@ -7,8 +7,6 @@ using System.Text;
 using ABI.CCK.Components;
 using ABI.CCK.Components.ScriptableObjects;
 using UnityEditor;
-using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace NAK.LuaTools
 {
@@ -30,15 +28,9 @@ namespace NAK.LuaTools
             luaClientBehaviour.enabled = wrapper.enabled;
             luaClientBehaviour.localOnly = wrapper.localOnly;
             luaClientBehaviour.asset = luaAsset;
-
-            Debug.Log($"Created Lua Client Behaviour for {wrapper.name}");
-            Debug.Log($"Bound entries count: {wrapper.boundEntries.Length}");
+            
             if (wrapper.boundEntries?.Length > 0)
-            {
-                Debug.Log($"Bound entries found for {wrapper.name}");
                 luaClientBehaviour.boundObjects = CreateBoundObjects(wrapper.boundEntries);
-                Debug.Log($"There are now {luaClientBehaviour.boundObjects.Length} bound objects");
-            }
 
             return;
             static CVRBaseLuaBehaviour.BoundObject[] CreateBoundObjects(NAKLuaClientBehaviourWrapper.BoundItem[] boundEntries)
@@ -76,17 +68,15 @@ namespace NAK.LuaTools
         private static string GenerateCleanScriptPath(string scriptName)
         {
             var sanitizedScriptName = LuaScriptUtility.SanitizeFileName(scriptName);
-            return Path.Combine(LUA_ASSET_OUTPUT_PATH, sanitizedScriptName + ".asset");
+            return Path.Combine(LUA_ASSET_OUTPUT_PATH, "generated." + sanitizedScriptName + ".lua");
         }
 
         private static CVRLuaScript CreateLuaAsset(string scriptPath, string scriptText)
         {
             LuaScriptUtility.EnsureDirectoryExists(scriptPath);
-            CVRLuaScript luaAsset = ScriptableObject.CreateInstance<CVRLuaScript>();
-            luaAsset.m_ScriptPath = scriptPath;
-            luaAsset.m_ScriptText = scriptText;
-            AssetDatabase.CreateAsset(luaAsset, scriptPath);
-            return luaAsset;
+            File.WriteAllText(scriptPath, scriptText); // create a text file
+            AssetDatabase.Refresh(); // lame, but needed to hit the scripted importer
+            return AssetDatabase.LoadAssetAtPath<CVRLuaScript>(scriptPath); // load the asset
         }
 
         #endregion Component Creation
@@ -185,8 +175,9 @@ namespace NAK.LuaTools
                         script.AppendLine($"{indent}[\"{boundName}\"] = UnityEngine.NewBoundsInt(UnityEngine.NewVector3Int({entry.boundsIntValue.position.x}, {entry.boundsIntValue.position.y}, {entry.boundsIntValue.position.z}), UnityEngine.NewVector3Int({entry.boundsIntValue.size.x}, {entry.boundsIntValue.size.y}, {entry.boundsIntValue.size.z})),");
                         break;
                     case NAKLuaClientBehaviourWrapper.BoundItemType.LayerMask:
-                        script.AppendLine($"{indent}[\"{boundName}\"] = UnityEngine.NewLayerMask({entry.layerMaskValue.value}),");
-                        Debug.LogWarning("LayerMask constructor is not yet exposed to LUA!");
+                        //script.AppendLine($"{indent}[\"{boundName}\"] = UnityEngine.NewLayerMask({entry.layerMaskValue.value}),");
+                        //Debug.LogWarning("LayerMask constructor is not yet exposed to LUA!");
+                        script.AppendLine($"{indent}[\"{boundName}\"] = {entry.layerMaskValue.value},"); // int value works fine
                         break;
                     case NAKLuaClientBehaviourWrapper.BoundItemType.Table:
                         script.AppendLine($"{indent}[\"{boundName}\"] = {{");

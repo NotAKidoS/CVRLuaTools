@@ -13,6 +13,7 @@ namespace NAK.LuaTools
         public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(rect, label, property);
+            rect.y += 2;
             rect.height = EditorGUIUtility.singleLineHeight;
             
             SerializedProperty nameProp = property.FindPropertyRelative("name");

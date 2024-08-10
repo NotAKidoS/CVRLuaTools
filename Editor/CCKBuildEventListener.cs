@@ -14,7 +14,7 @@ namespace NAK.LuaTools
         {
             CCK_BuildUtility.PreAvatarBundleEvent.AddListener(OnPreBundleEvent);
             CCK_BuildUtility.PrePropBundleEvent.AddListener(OnPreBundleEvent);
-            CCK_BuildUtility.PreWorldBundleEvent.AddListener(OnPreBundleWorldEvent);
+            CCK_BuildUtility.PreWorldBundleEvent.AddListener(OnPreBundleWorldEvent); // TODO: how to handle properly
         }
         
         private static void OnPreBundleEvent(GameObject uploadedObject)
@@ -33,15 +33,15 @@ namespace NAK.LuaTools
                 var foundWrappers = rootObject.GetComponentsInChildren<NAKLuaClientBehaviourWrapper>(true);
                 luaClientWrappers.AddRange(foundWrappers);
             }
-            ProcessWrappers(luaClientWrappers);
+            ProcessWrappers(luaClientWrappers, false);
         }
         
-        private static void ProcessWrappers(IList<NAKLuaClientBehaviourWrapper> luaClientWrappers)
+        private static void ProcessWrappers(IList<NAKLuaClientBehaviourWrapper> luaClientWrappers, bool safeToDestroy = true)
         {
             foreach (NAKLuaClientBehaviourWrapper wrapper in luaClientWrappers)
             {
                 LuaScriptGenerator.CreateLuaClientBehaviourFromWrapper(wrapper);
-                Object.DestroyImmediate(wrapper);
+                if (safeToDestroy) Object.DestroyImmediate(wrapper);
             }
         }
     }

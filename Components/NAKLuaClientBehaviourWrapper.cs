@@ -110,6 +110,8 @@ namespace NAK.LuaTools
         #region Editor Fields & Methods
         
         // preview script text
+        public int CachedLineCount { get; set; }
+        public string CachedLineNumberText { get; set; }
         public string OutputScriptText { get; set; }
 
         // forwarding onvalidate to the editor

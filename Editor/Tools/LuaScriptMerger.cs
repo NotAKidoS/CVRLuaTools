@@ -8,7 +8,7 @@ namespace NAK.LuaTools
 	// entirely Exterrata, thank you <3
 	public static class LuaScriptMerger {
 		private static readonly HashSet<char> Delimiters = new() {
-			' ', '\t', '\n', '\r', '(', ')', ';', ':', '.', '=', '"'
+			' ', '\t', '\n', '\r', '(', ')', ';', '=', '"', //'.'':'
 		};
 		
 		public static string MergeScripts(string[] scripts) {
@@ -44,7 +44,7 @@ namespace NAK.LuaTools
 							markers.Add(start);
 							break;
 						case "end":
-							if (--depth == 0) markers.Add(end + 2);
+							if (--depth == 0) markers.Add(end + 1);
 							break;
 						case "function":
 						case "if":
