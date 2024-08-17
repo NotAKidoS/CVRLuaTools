@@ -15,15 +15,24 @@ namespace NAK.LuaTools
         private const string LUA_ASSET_OUTPUT_PATH = "Assets/NotAKid/LuaTools.Generated/";
 
         #region Component Creation
-
-        public static void CreateLuaClientBehaviourFromWrapper(NAKLuaClientBehaviourWrapper wrapper)
+        
+        public static (string, string) CreateScriptTextFromWrapper(NAKLuaClientBehaviourWrapper wrapper)
         {
             var scriptPath = GenerateCleanScriptPath(wrapper.scriptName);
             var scriptText = GenerateScriptText(wrapper.boundEntries, wrapper.scriptEntries);
+            
+            wrapper.OutputScriptText = scriptText;
+            //wrapper.scriptPath = scriptPath;
+            return (scriptPath, scriptText);
+        }
+
+        public static void CreateLuaClientBehaviourFromWrapper(NAKLuaClientBehaviourWrapper wrapper)
+        {
+            (string scriptPath, string scriptText) = CreateScriptTextFromWrapper(wrapper);
             CVRLuaScript luaAsset = CreateLuaAsset(scriptPath, scriptText);
 
-            if (!wrapper.gameObject.TryGetComponent(out CVRLuaClientBehaviour luaClientBehaviour))
-                luaClientBehaviour = wrapper.gameObject.AddComponent<CVRLuaClientBehaviour>();
+            //if (!wrapper.gameObject.TryGetComponent(out CVRLuaClientBehaviour luaClientBehaviour))
+            CVRLuaClientBehaviour luaClientBehaviour = wrapper.gameObject.AddComponent<CVRLuaClientBehaviour>();
 
             luaClientBehaviour.enabled = wrapper.enabled;
             luaClientBehaviour.localOnly = wrapper.localOnly;
@@ -120,7 +129,11 @@ namespace NAK.LuaTools
                 foreach (NAKLuaClientBehaviourWrapper.ScriptEntry entry in scriptEntries)
                 {
                     if (!entry.IsValidAndActive) continue;
-                    scriptTexts.Add(entry.script.m_ScriptText);
+                    
+                    string assetPath = AssetDatabase.GetAssetPath(entry.script);
+                    string absolutePath = Path.GetFullPath(assetPath);
+                    
+                    scriptTexts.Add(File.ReadAllText(absolutePath));
                 }
             } 
 

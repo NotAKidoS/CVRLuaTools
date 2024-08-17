@@ -1,12 +1,13 @@
 #if CVR_CCK_EXISTS
 using System;
-using UnityEngine;
+using ABI.CCK.Components;
 using ABI.CCK.Components.ScriptableObjects;
+using UnityEngine;
 using UnityEngine.Animations;
 
 namespace NAK.LuaTools
 {
-    public class NAKLuaClientBehaviourWrapper : MonoBehaviour
+    public class NAKLuaClientBehaviourWrapper : CVRLuaClientBehaviour // inheriting for faster lookup
     {
         #region Bound Definitions
 
@@ -90,10 +91,11 @@ namespace NAK.LuaTools
         
         #region Serialized Fields
 
-        [SerializeField] [NotKeyable]
-        public bool localOnly = true;
-        [SerializeField] [NotKeyable]
-        public bool obfuscate;
+        // [SerializeField] [NotKeyable]
+        // public bool localOnly = true;
+        
+        //[SerializeField] [NotKeyable] // TODO: uh
+        //public bool obfuscate;
         
         [SerializeField] [NotKeyable]
         public BoundItem[] boundEntries;
@@ -102,8 +104,8 @@ namespace NAK.LuaTools
 
         [SerializeField] [NotKeyable]
         public string scriptName = "New Lua Script";
-        [SerializeField] [NotKeyable]
-        public string scriptPath;
+        // [SerializeField] [NotKeyable] // TODO: determine if needed
+        // public string scriptPath;
 
         #endregion Serialized Fields
 

@@ -26,6 +26,11 @@ namespace NAK.LuaTools
         {
             return input.Replace("\\", @"\\").Replace("\"", "\\\"");
         }
+        
+        public static string NormalizePath(string path)
+        {
+            return path.Replace("\\", "/");
+        }
     }
 }
 #endif

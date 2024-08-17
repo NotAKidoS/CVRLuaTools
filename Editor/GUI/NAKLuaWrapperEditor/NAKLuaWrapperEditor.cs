@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR && CVR_CCK_EXISTS
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -98,6 +99,10 @@ namespace NAK.LuaTools
                 if (!t.IsValid || !t.IsDirty) continue;
                 t.UpdateState();
                 hasChanged = true;
+                
+                // tickle the file
+                string path = Application.dataPath.Substring(0, Application.dataPath.Length - 6) + t.script.m_ScriptPath;
+                File.SetLastWriteTime(path, System.DateTime.Now);
             }
 
             if (!hasChanged
