@@ -22,10 +22,13 @@ namespace NAK.LuaTools
             var halfWidth = rect.width / 2;
             var nameWidth = halfWidth * 0.65f;
             var typeWidth = halfWidth * 0.35f;
+            
+            const float buttonWidth = 19;
 
             Rect nameRect = new(rect.x, rect.y, nameWidth, rect.height);
             Rect typeRect = new(rect.x + nameWidth + 2, rect.y, typeWidth - 2, rect.height);
             Rect valueRect = new(rect.x + halfWidth + 2, rect.y, halfWidth - 2, rect.height);
+            Rect buttonRect = new(rect.x + rect.width - buttonWidth, rect.y, buttonWidth, rect.height);
             
             EditorGUI.PropertyField(nameRect, nameProp, GUIContent.none);
             EditorGUI.PropertyField(typeRect, typeProp, GUIContent.none);
@@ -38,6 +41,13 @@ namespace NAK.LuaTools
 
                     if (DragAndDropHelper.CheckDragAndDrop(nameRect))
                         DragAndDropHelper.ApplyDragAndDropToProperty(objectReference, nameProp);
+
+                    bool showComponentDropdown = objectReference.objectReferenceValue is GameObject or Component;
+                    if (showComponentDropdown)
+                    {
+                        valueRect.width -= buttonWidth; // c is for cock
+                        if (GUI.Button(buttonRect, "C")) ShowComponentDropdown(objectReference);
+                    }
                     
                     EditorGUI.PropertyField(valueRect, objectReference, GUIContent.none);
                     break;
@@ -121,6 +131,44 @@ namespace NAK.LuaTools
                 default:
                     return height + 4;
             }
+        }
+        
+        private static void ShowComponentDropdown(SerializedProperty objectReference)
+        {
+            int instanceId = objectReference.objectReferenceInstanceIDValue;
+            GameObject gameObject = objectReference.objectReferenceValue switch
+            {
+                GameObject go => go,
+                Component component => component.gameObject,
+                _ => null
+            };
+
+            if (gameObject == null) 
+                return;
+            
+            // collect components on the GameObject and show a dropdown menu
+            
+            GenericMenu menu = new();
+            menu.AddItem(new GUIContent("GameObject"), gameObject.GetInstanceID() == instanceId, () =>
+            {
+                objectReference.objectReferenceValue = gameObject;
+                objectReference.serializedObject.ApplyModifiedProperties();
+            });
+            
+            menu.AddSeparator(string.Empty); // looks nice to separate root object from components
+            
+            var components = gameObject.GetComponents<Component>();
+            for (var i = 0; i < components.Length; i++)
+            {
+                Component component = components[i]; // appending index so object with multiple of same component can be selected
+                menu.AddItem(new GUIContent($"{i}. {component.GetType().Name}"), component.GetInstanceID() == instanceId, () =>
+                {
+                    objectReference.objectReferenceValue = component;
+                    objectReference.serializedObject.ApplyModifiedProperties();
+                });
+            }
+
+            menu.ShowAsContext();
         }
     }
 }
